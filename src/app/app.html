@@ -1,0 +1,69 @@
+<h1>CRUD de Produtos</h1>
+
+<h3>Novo Produto</h3>
+
+<input [(ngModel)]="novoProduto.nome" placeholder="Nome">
+<input type="number" [(ngModel)]="novoProduto.preco" placeholder="Preço">
+<input type="number" [(ngModel)]="novoProduto.quantidade" placeholder="Quantidade">
+
+<div class="botao-central">
+  <button type="button" (click)="cadastrar()">Cadastrar</button>
+</div>
+
+<hr>
+
+<h3>Lista</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Preço</th>
+      <th>Qtd</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let produto of produtos; trackBy: trackById">
+
+      <!-- Nome -->
+      <td *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
+        {{ produto.nome }}
+      </td>
+      <td *ngIf="produtoEditando && produtoEditando.id === produto.id">
+        <input [(ngModel)]="produtoEditando.nome">
+      </td>
+
+      <!-- Preço -->
+      <td *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
+        R$ {{ produto.preco }}
+      </td>
+      <td *ngIf="produtoEditando && produtoEditando.id === produto.id">
+        <input type="number" [(ngModel)]="produtoEditando.preco">
+      </td>
+
+      <!-- Quantidade -->
+      <td *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
+        {{ produto.quantidade }}
+      </td>
+      <td *ngIf="produtoEditando && produtoEditando.id === produto.id">
+        <input type="number" [(ngModel)]="produtoEditando.quantidade">
+      </td>
+
+      <!-- Ações -->
+      <td>
+        <div class="botoes" *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
+          <button type="button" (click)="editar(produto)">Editar</button>
+          <button type="button" (click)="deletar(produto.id)">Excluir</button>
+        </div>
+
+        <div class="botoes" *ngIf="produtoEditando && produtoEditando.id === produto.id">
+          <button type="button" (click)="atualizar()">Salvar</button>
+          <button type="button" (click)="cancelar()">Cancelar</button>
+        </div>
+      </td>
+
+    </tr>
+  </tbody>
+</table>
