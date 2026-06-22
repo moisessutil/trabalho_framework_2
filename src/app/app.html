@@ -3,11 +3,11 @@
 <h3>Novo Produto</h3>
 
 <input [(ngModel)]="novoProduto.nome" placeholder="Nome">
-<input type="number" [(ngModel)]="novoProduto.preco" placeholder="Preço">
-<input type="number" [(ngModel)]="novoProduto.quantidade" placeholder="Quantidade">
+<input type="number" min="0" [(ngModel)]="novoProduto.preco" placeholder="Preço">
+<input type="number" min="0" [(ngModel)]="novoProduto.quantidade" placeholder="Quantidade">
 
 <div class="botao-central">
-  <button type="button" (click)="cadastrar()">Cadastrar</button>
+  <button type="button" (click)="cadastrar()" [disabled]="novoProduto.preco < 0 || novoProduto.quantidade < 0">Cadastrar</button>
 </div>
 
 <hr>
@@ -27,7 +27,6 @@
   <tbody>
     <tr *ngFor="let produto of produtos; trackBy: trackById">
 
-      <!-- Nome -->
       <td *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
         {{ produto.nome }}
       </td>
@@ -35,23 +34,20 @@
         <input [(ngModel)]="produtoEditando.nome">
       </td>
 
-      <!-- Preço -->
       <td *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
         R$ {{ produto.preco }}
       </td>
       <td *ngIf="produtoEditando && produtoEditando.id === produto.id">
-        <input type="number" [(ngModel)]="produtoEditando.preco">
+        <input type="number" min="0" [(ngModel)]="produtoEditando.preco">
       </td>
 
-      <!-- Quantidade -->
       <td *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
         {{ produto.quantidade }}
       </td>
       <td *ngIf="produtoEditando && produtoEditando.id === produto.id">
-        <input type="number" [(ngModel)]="produtoEditando.quantidade">
+        <input type="number" min="0" [(ngModel)]="produtoEditando.quantidade">
       </td>
 
-      <!-- Ações -->
       <td>
         <div class="botoes" *ngIf="!(produtoEditando && produtoEditando.id === produto.id)">
           <button type="button" (click)="editar(produto)">Editar</button>
@@ -59,7 +55,7 @@
         </div>
 
         <div class="botoes" *ngIf="produtoEditando && produtoEditando.id === produto.id">
-          <button type="button" (click)="atualizar()">Salvar</button>
+          <button type="button" (click)="atualizar()" [disabled]="produtoEditando.preco < 0 || produtoEditando.quantidade < 0">Salvar</button>
           <button type="button" (click)="cancelar()">Cancelar</button>
         </div>
       </td>
