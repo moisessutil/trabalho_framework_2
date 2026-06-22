@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core'; // Adicionado OnDestroy
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // Adicionado ChangeDetectorRef
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { interval, Subscription } from 'rxjs'; // Importado interval e Subscription
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +10,7 @@ import { interval, Subscription } from 'rxjs'; // Importado interval e Subscript
   imports: [CommonModule, FormsModule],
   templateUrl: './app.html'
 })
-export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
+export class App implements OnInit, OnDestroy {
 
   //apiUrl = 'http://localhost:3000/produtos';
   apiUrl = '/api/produtos';
@@ -25,30 +25,31 @@ export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
 
   produtoEditando: any = null;
 
-  // Guarda a inscrição do intervalo para limpá-lo depois
   private repetidorSubscription!: Subscription;
 
-  constructor(private http: HttpClient) {}
+  // Injetando o cdr (ChangeDetectorRef) no construtor
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.listar(); // Mantido a primeira chamada direta aqui
-    this.iniciarRepeticao(); // Inicia a contagem dos 10 segundos
+    this.listar(); 
+    this.iniciarRepeticao(); 
   }
 
   listar() {
     this.http.get<any[]>(this.apiUrl)
-      .subscribe(res => {
-        // SÓ atualiza a lista se o usuário NÃO estiver editando uma linha agora
-        // Isso evita que o texto suma enquanto o usuário digita na tabela
-        if (!this.produtoEditando) {
-          this.produtos = res;
-        }
+      .subscribe({
+        next: (res) => {
+          if (!this.produtoEditando) {
+            this.produtos = res;
+            this.cdr.detectChanges(); // <--- FORÇA O ANGULAR A ATUALIZAR A TELA
+          }
+        },
+        error: (err) => console.error('Erro ao buscar produtos:', err)
       });
   }
 
-  // Função nova que apenas chama o listar() a cada 10 segundos
   iniciarRepeticao() {
-    this.repetidorSubscription = interval(10000) // 10000ms = 10 segundos
+    this.repetidorSubscription = interval(10000) // 10 segundos
       .subscribe(() => {
         this.listar();
       });
@@ -56,7 +57,6 @@ export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
 
   // CADASTRAR
   cadastrar() {
-    // Validação frontend contra números negativos
     if (this.novoProduto.preco < 0 || this.novoProduto.quantidade < 0) {
       alert('O preço e a quantidade não podem ser negativos!');
       return;
@@ -64,8 +64,9 @@ export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
 
     this.http.post(this.apiUrl, this.novoProduto)
       .subscribe((novo: any) => {
-        this.produtos.push(novo); // adiciona direto na lista
-        this.novoProduto = { nome: '', preco: null, quantidade: null };
+        this.produtos.push(novo); 
+        this.novoProduto = { nome: '', preco: null, quantity: null };
+        this.cdr.detectChanges(); // Atualiza a tela após cadastrar
       });
   }
 
@@ -74,6 +75,7 @@ export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
     this.http.delete(`${this.apiUrl}/${id}`)
       .subscribe(() => {
         this.produtos = this.produtos.filter(p => p.id !== id);
+        this.cdr.detectChanges(); // Atualiza a tela após deletar
       });
   }
 
@@ -84,7 +86,6 @@ export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
 
   // ATUALIZAR
   atualizar() {
-    // Validação frontend contra números negativos na edição
     if (this.produtoEditando.preco < 0 || this.produtoEditando.quantidade < 0) {
       alert('O preço e a quantidade não podem ser negativos!');
       return;
@@ -95,6 +96,7 @@ export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
         const index = this.produtos.findIndex(p => p.id === atualizado.id);
         this.produtos[index] = atualizado;
         this.produtoEditando = null;
+        this.cdr.detectChanges(); // Atualiza a tela após editar
       });
   }
 
@@ -106,7 +108,6 @@ export class App implements OnInit, OnDestroy { // Adicionado OnDestroy
     return produto.id;
   }
 
-  // Destrói o intervalo se o usuário sair desta tela
   ngOnDestroy() {
     if (this.repetidorSubscription) {
       this.repetidorSubscription.unsubscribe();
